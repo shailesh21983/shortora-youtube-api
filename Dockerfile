@@ -11,8 +11,8 @@ WORKDIR /app
 
 COPY youtube-api.py /app/youtube-api.py
 
-RUN pip install --no-cache-dir flask yt-dlp
+RUN pip install --no-cache-dir fastapi uvicorn yt-dlp pydantic
 
 EXPOSE 10000
 
-CMD ["python", "youtube-api.py"]
+CMD ["uvicorn", "youtube-api:app", "--host", "0.0.0.0", "--port", "10000"]
