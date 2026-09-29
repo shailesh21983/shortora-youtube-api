@@ -50,10 +50,8 @@ def health():
         "status": "online"
     }
 
-@app.post("/info")
-def info(req: VideoRequest, x_api_key: str | None = Header(default=None)):
-    check_key(x_api_key)
-    check_youtube(req.url)
+def extract_info(url: str):
+    check_youtube(url)
 
     opts = {
         "quiet": True,
@@ -64,7 +62,7 @@ def info(req: VideoRequest, x_api_key: str | None = Header(default=None)):
 
     try:
         with YoutubeDL(opts) as ydl:
-            data = ydl.extract_info(req.url, download=False)
+            data = ydl.extract_info(url, download=False)
 
         return {
             "ok": True,
@@ -76,6 +74,17 @@ def info(req: VideoRequest, x_api_key: str | None = Header(default=None)):
         }
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
+
+@app.get("/info")
+def info_get(url: str):
+    # Temporary browser-test endpoint. The production PHP client should use
+    # POST /info with X-API-Key after the extractor is verified.
+    return extract_info(url)
+
+@app.post("/info")
+def info_post(req: VideoRequest, x_api_key: str | None = Header(default=None)):
+    check_key(x_api_key)
+    return extract_info(req.url)
 
 @app.post("/download")
 def download(req: VideoRequest, x_api_key: str | None = Header(default=None)):
